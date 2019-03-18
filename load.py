@@ -34,7 +34,7 @@ def init_database():
     global event_parser
     appdata = get_plugin_dir() + '\\axi.db'
     conn = sqlite3.connect(appdata)
-
+    #Todo: move this to the db_connection class
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS systems (address INTEGER PRIMARY KEY, name VARCHAR(50) UNIQUE);')
     c.execute('CREATE TABLE IF NOT EXISTS factions (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) UNIQUE);')
@@ -54,7 +54,8 @@ def copy_text():
         lines = [str(s) for s in this.listbox.get(0, tk.END)]
     else:
         lines = [str(this.listbox.get(s)) for s in sel]
-    text = '```'+ '\n'.join(lines) + '```'
+    text = '\n'.join(lines)
+    text = str.format('```{0: <25}{1: >25}\n{2}```', this.faction_name.get(),this.system_name.get(), text)
     
     this.listbox.clipboard_clear()
     this.listbox.clipboard_append(text)
