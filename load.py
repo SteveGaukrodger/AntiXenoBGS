@@ -13,16 +13,22 @@ import entry_lookup
 from event_parser import EventParser
 from db_connection import DbConnection
 from file_finder import FileFinder
+from google_sheets_writer import GoogleSheetsWriter
+
 db_connection = None
 event_parser = None
 this = sys.modules[__name__]
 conn = None
 
+
+
 def get_plugin_dir():
     appdata = os.getenv('LOCALAPPDATA') + '\\EDMarketConnector\\plugins'
     plugin_base = os.path.basename(os.path.dirname(__file__))
     return appdata + '\\' + plugin_base
-    
+ 
+gsw = GoogleSheetsWriter(get_plugin_dir())
+ 
 def close_connection():
     global conn
     conn.close()
@@ -44,7 +50,7 @@ def init_database():
     c.execute('INSERT OR IGNORE INTO factions (name) VALUES (?)',['Anti Xeno Initiative'])
     conn.commit()
     db_connection = DbConnection(conn)
-    event_parser = EventParser(db_connection)
+    event_parser = EventParser(db_connection, gsw)
     
 def copy_text():
 
@@ -111,7 +117,7 @@ def update_faction_effects():
 
     
 def journal_entry(cmdr, is_beta, system, station, entry, state):
-    event_parser.read_entry(entry, system)
+    event_parser.read_entry(entry, system, cmdr)
     update_faction_effects()
                 
 

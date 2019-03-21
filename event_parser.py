@@ -2,16 +2,17 @@ from datetime import timedelta, datetime, tzinfo
 import utctz
         
 class EventParser:
-    def __init__(self, db_connection):
+    def __init__(self, db_connection, google_sheets_writer):
         self.db_connection = db_connection
+        self.google_sheets_writer = google_sheets_writer
 
-    def read_entry(self, entry, system):
+    def read_entry(self, entry, system, cmdr=None):
         if entry['event'] == 'FSDJump':
             self.read_system(entry)
         elif entry['event'] == 'Docked':
             self.read_system(entry)
         elif entry['event'] == 'MissionCompleted':
-            self.read_mission_completed(entry)
+            self.read_mission_completed(entry,cmdr)
         elif entry['event'] == 'RedeemVoucher':
             self.read_voucher(entry, system)
 
@@ -35,7 +36,7 @@ class EventParser:
     def read_system(self, entry):
         self.db_connection.add_system(entry['SystemAddress'], entry['StarSystem'])        
         
-    def read_mission_completed(self, entry):
+    def read_mission_completed(self, entry, cmdr=None):
         if entry['event'] == 'MissionCompleted':
             faction_effects = []
             for fe in entry['FactionEffects']:
@@ -59,5 +60,8 @@ class EventParser:
                     tick_date = ts - timedelta(hours=13, minutes=30)
                     effect['tick_date'] = tick_date.replace(hour=0, minute=0,second=0)
                     faction_effects.append(effect)
+                    #if cmdr<>None:
+                    #    google_sheets_writer.write_faction_effects(ts, cmdr, db_connection.get_system(inf['SystemAddress']), faction, effect['inf_change'], "NotImplementedError")
+                        
             self.db_connection.write_faction_effects(faction_effects)
         
